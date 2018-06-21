@@ -8,6 +8,7 @@ public class Tile : MonoBehaviour {
 
 	public HexBoard board;
 	public HexBoard.HexCord cord;
+	public Type type;
 //	private Vector3 dragOrigin;
 	public bool isSpot;
 

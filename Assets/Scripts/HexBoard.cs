@@ -48,8 +48,6 @@ public class HexBoard : MonoBehaviour {
 	private Tile selectedTile;
 	private bool firstTurn;
 
-
-
     private void Start()
 	{
 		GenerateBoard();
@@ -57,10 +55,11 @@ public class HexBoard : MonoBehaviour {
 
 		// Create a fake board layout to test move highlighter
 		HexCord[] fakeBoard = {HC(0,-1), HC(-1,0), HC(-1,1), HC(0,1), HC(1,0), HC(1,-1), HC(2,-2), HC(2,0), HC(3,-1)}; 
-
-		// for (int i = 0; i < fakeBoard.Length; i++) {
-
-		// }
+		List<Tile> usableTiles = FindTilesInArea(GameArea.WhiteBase);
+		for (int i = 0; i < fakeBoard.Length; i++) {
+			MoveTileToHexCord(usableTiles[i], fakeBoard[i]);
+		}
+		firstTurn = false;
 	}
 
 	private void GenerateBoard()
@@ -82,6 +81,7 @@ public class HexBoard : MonoBehaviour {
 		tileGameObject.transform.SetParent(transform);
 		Tile t = tileGameObject.GetComponent<Tile>();
 		t.board = this;
+		t.type = type;
 		HexCord cord = GetBaseHexCordForTypeColorAndDepth(type, isWhite, depth);
 		MoveTileToHexCord(t, cord);
 		// tileGameObject.
@@ -107,19 +107,24 @@ public class HexBoard : MonoBehaviour {
 
 	private void MoveTileToHexCord(Tile t, HexCord hc) 
 	{
-		Debug.Log("Moving to " + HCStr(hc));
-		// Remove from dictionary if needed.
-		tiles.Remove(t.cord);
-		// Add tile to dict with new cord and set new cord
-		tiles.Add(hc, t);
+		// Debug.Log("Moving to " + HCStr(hc));
+		
+		if (!t.isSpot) 
+		{
+			// Remove from dictionary if needed.
+			tiles.Remove(t.cord);
+			// Add tile to dict with new cord and set new cord
+			tiles.Add(hc, t);
+		}
+		
+		// Set internal position
 		t.cord = hc;
+
 		// Get transform from hex cord
-		
-		
 		// NOTE note sure why its off by 3.4... but it is. 
     	float x = (hexSize * ((float)Math.Sqrt(3) * hc.x  + (float) Math.Sqrt(3)/2 * hc.z));
     	float z = hexSize * (3.0f/2 * hc.z);
-    	Vector3 newPos = new Vector3(x, (hc.y * hexHeight) + (0.5f * hexHeight), z);
+    	Vector3 newPos = new Vector3(x, (hc.y * hexHeight) + (0.8f * hexHeight), z);
 		t.gameObject.transform.position = newPos;
 	}
 
@@ -143,11 +148,11 @@ public class HexBoard : MonoBehaviour {
 				// Highlight possible positions
 				if (firstTurn)
 				{
-					HighlightHexCord(new HexCord(){x=0,y=0,z=0});
+					ShowSpot(new HexCord(){x=0,y=0,z=0});
 				} 
 				else 
 				{
-					// Highlight Spots For Selected
+					HighlightSpotsForSelected();
 				}
 			}
         }
@@ -155,11 +160,24 @@ public class HexBoard : MonoBehaviour {
 
 	private void HighlightSpotsForSelected()
 	{
-		// First do ants
-		// Ants can go around the outside of the hive
+		switch (selectedTile.type)
+		{
+			case Tile.Type.Ant:
+			default:
+			{
+				// Show all neighbor spots
+				ShowSpots(FindOpenNeighborHexCords());
+				break;
+			}
+		}
 	}
 
-	private void HighlightHexCord(HexCord hc) 
+	private void ShowSpots(HashSet<HexCord> hcs)
+	{
+		foreach (HexCord hc in hcs) ShowSpot(hc);
+	}
+
+	private void ShowSpot(HexCord hc) 
 	{
 		// Highlight
 		GameObject highlightSpotGameObject = Instantiate(highlightSpotPrefab) as GameObject;
@@ -211,5 +229,39 @@ public class HexBoard : MonoBehaviour {
 	public void TileDragEnded(Tile t)
 	{
 		Debug.Log("TileDragEnded");
+	}
+
+	// Tile finders
+	private List<Tile> FindTilesInArea(GameArea area)
+	{
+		List<Tile> foundTiles = new List<Tile>();
+		foreach (KeyValuePair<HexCord, Tile> p in tiles) {
+			if (p.Key.a == area) {
+				foundTiles.Add(p.Value);
+			}
+		}
+		return foundTiles;
+	}
+
+	private HashSet<HexCord> FindOpenNeighborHexCords() 
+	{
+		HashSet<HexCord> openNeighbors = new HashSet<HexCord>();
+		List<HexCord> HexDirections = new List<HexCord>() {HC(+1, 0), HC(+1, -1), HC(0, -1),HC(-1, 0), HC(-1, +1), HC(0, +1)};
+		foreach (KeyValuePair<HexCord, Tile> p in tiles) {
+			if (p.Value.cord.a == GameArea.Board) {
+				foreach (HexCord hc in HexDirections) {
+					HexCord potentialNeighbor = CordSum(p.Value.cord, hc);
+					if (!tiles.ContainsKey(potentialNeighbor)) {
+						openNeighbors.Add(potentialNeighbor);
+					}
+				}
+			}
+		}
+		return openNeighbors;
+	}
+
+	private HexCord CordSum(HexCord a, HexCord b)
+	{
+		return HC(a.x + b.x, a.z + b.z);
 	}
 }
