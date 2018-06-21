@@ -4,19 +4,13 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 
-	public enum Type { Ladybug, Roach, Mosquito };
+	public enum Type { Ladybug, Roach, Mosquito, Ant, RollyPolly, Queen };
 
 	public HexBoard board;
-	private bool selected;
-	private Vector3 dragOrigin;
+	public HexBoard.HexCord cord;
+//	private Vector3 dragOrigin;
+	public bool isSpot;
 
-	
-	public static List<KeyValuePair<Type, int>> TypeCounts = new List<KeyValuePair<Type, int>>
-    {
-        new KeyValuePair<Type, int>(Type.Ladybug, 2),
-        new KeyValuePair<Type, int>(Type.Roach, 1),
-        new KeyValuePair<Type, int>(Type.Mosquito, 3)
-    };
 
 	// Use this for initialization
 	void Start () {
@@ -46,7 +40,7 @@ public class Tile : MonoBehaviour {
 		// } else {
 		// 	board.TileTappedOrClicked(this);
 		// }
-		board.SelectedTile = this;
+		board.TileOrSpotTouched(this);
 	}
 
 	// Update is called once per frame

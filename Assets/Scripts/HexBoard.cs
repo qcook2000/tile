@@ -12,82 +12,92 @@ public class HexBoard : MonoBehaviour {
 		{
 			case Tile.Type.Ladybug: return 2;
 			case Tile.Type.Mosquito: return 3;
-			case Tile.Type.Roach: return 1;
+			case Tile.Type.Roach: return 4;
+			case Tile.Type.Ant: return 2;
+			case Tile.Type.RollyPolly: return 3;
+			case Tile.Type.Queen: return 1;
 		}
-		return -1;
+		return 0;
 	}
-	static List<Tile.Type> typeOrder = new List<Tile.Type> {Tile.Type.Ladybug, Tile.Type.Mosquito, Tile.Type.Roach};
+	
 	static float hexSize = 1f;
 	static float hexHeight = 0.3f;
 
 	// Hex Structs
+	public enum GameArea {Board, WhiteBase, BlackBase}; 
+
+	// Hex Cord and Conveniance Methods
 	public struct HexCord
 	{
 		public int x; // Left right
 		public int y; // Up down
 		public int z; // Front back
+		public GameArea a; // Area 
 	}
-	public String HCStr(HexCord hc) { return "x: " + hc.x + ", y: " + hc.y + ", z: " + hc.z;}
+	private String HCStr(HexCord hc) { return "x" + hc.x + ", y" + hc.y + ", z" + hc.z + ", a" + hc.a;}
+	private HexCord HC(int x, int z) { return new HexCord() {x = x, y = 0, z = z, a = GameArea.Board}; }
+	private HexCord HC(int x, int y, int z) { return new HexCord() {x = x, y = y, z = z, a = GameArea.Board}; }
+	private HexCord HC(int x, int y, int z, GameArea a) { return new HexCord() {x = x, y = y, z = z, a = a}; }
 
-	// Game areas
-	public Dictionary<HexCord, Stack<Tile>> tileBoard = new Dictionary<HexCord, Stack<Tile>>();
-	public Dictionary<Tile.Type, Stack<Tile>> whitesTiles = new Dictionary<Tile.Type, Stack<Tile>>();
-	public Dictionary<Tile.Type, Stack<Tile>> blacksTiles = new Dictionary<Tile.Type, Stack<Tile>>();
 	
 	// Game objects
 	public GameObject tilePrefab;
 	public GameObject highlightSpotPrefab;
-    private Tile selectedTile;
+	private Dictionary<HexCord, Tile> tiles = new Dictionary<HexCord, Tile>();
 	private List<Tile> highlightedSpots = new List<Tile>();
-
-	// Game Logic
+	private Tile selectedTile;
 	private bool firstTurn;
+
+
 
     private void Start()
 	{
 		GenerateBoard();
 		firstTurn = true;
+
+		// Create a fake board layout to test move highlighter
+		HexCord[] fakeBoard = {HC(0,-1), HC(-1,0), HC(-1,1), HC(0,1), HC(1,0), HC(1,-1), HC(2,-2), HC(2,0), HC(3,-1)}; 
+
+		// for (int i = 0; i < fakeBoard.Length; i++) {
+
+		// }
 	}
 
 	private void GenerateBoard()
 	{
-		foreach (Tile.Type type in typeOrder)
+		foreach (Tile.Type type in Enum.GetValues(typeof(Tile.Type)))
 		{
 			int count = CountOfType(type);
 			for (int y = 0; y < count; y++)
 			{
-				GenerateTile(type, true);
-				GenerateTile(type, false);
+				GenerateTile(type, true, y);
+				GenerateTile(type, false, y);
 			}
 		}
 	}
 
-	private void GenerateTile(Tile.Type type, bool isWhite)
+	private void GenerateTile(Tile.Type type, bool isWhite, int depth)
 	{
 		GameObject tileGameObject = Instantiate(tilePrefab) as GameObject;
 		tileGameObject.transform.SetParent(transform);
 		Tile t = tileGameObject.GetComponent<Tile>();
 		t.board = this;
-		Dictionary<Tile.Type, Stack<Tile>> homeBase = isWhite ? whitesTiles : blacksTiles;
-		if (!homeBase.ContainsKey(type)) { 
-			homeBase[type] = new Stack<Tile>();
-		}
-		homeBase[type].Push(t);
-		HexCord cord = GetBaseHexCordForTypeColorAndDepth(type, isWhite, homeBase[type].Count - 1);
+		HexCord cord = GetBaseHexCordForTypeColorAndDepth(type, isWhite, depth);
 		MoveTileToHexCord(t, cord);
-
-
 		// tileGameObject.
 	}
 
 	private HexCord GetBaseHexCordForTypeColorAndDepth(Tile.Type type, bool isWhite, int depth)
 	{
-		int z = (int)Math.Floor(GetBoardYDim()/2.0) + 2;
+		Array types = Enum.GetValues(typeof(Tile.Type));
+		int padding = 6;
+		int z = (int)Math.Floor(GetBoardYDim()/2.0) + padding;
+		if (types.Length % 2 == 0) z -= 1;
 		if (isWhite) z *= -1;
-		int x = (int)Math.Floor(typeOrder.Count/2.0) + typeOrder.IndexOf(type) - 1;
-		if (!isWhite) x -=(int)Math.Floor(GetBoardYDim()/2.0) + 2;
+		int x = z/-2 - types.Length/2 + Array.IndexOf(types, type);
+		//if (!isWhite) x -=(int)Math.Floor(GetBoardYDim()/2.0) + padding;
 		// Debug.Log("Type: " + type + ", Index:" + typeOrder.IndexOf(type));
-		return new HexCord() {x = x, z = z, y = depth};
+		return HC(x, depth, z, isWhite ? GameArea.WhiteBase : GameArea.BlackBase);
 	}
 
 	private int GetBoardYDim() 
@@ -97,9 +107,17 @@ public class HexBoard : MonoBehaviour {
 
 	private void MoveTileToHexCord(Tile t, HexCord hc) 
 	{
+		Debug.Log("Moving to " + HCStr(hc));
+		// Remove from dictionary if needed.
+		tiles.Remove(t.cord);
+		// Add tile to dict with new cord and set new cord
+		tiles.Add(hc, t);
+		t.cord = hc;
 		// Get transform from hex cord
-		// Debug.Log(HCStr(hc));
-    	float x = hexSize * ((float)Math.Sqrt(3) * hc.x  + (float) Math.Sqrt(3)/2 * hc.z);
+		
+		
+		// NOTE note sure why its off by 3.4... but it is. 
+    	float x = (hexSize * ((float)Math.Sqrt(3) * hc.x  + (float) Math.Sqrt(3)/2 * hc.z));
     	float z = hexSize * (3.0f/2 * hc.z);
     	Vector3 newPos = new Vector3(x, (hc.y * hexHeight) + (0.5f * hexHeight), z);
 		t.gameObject.transform.position = newPos;
@@ -114,20 +132,32 @@ public class HexBoard : MonoBehaviour {
 
         set
         {
-            if (selectedTile) {
+            if (selectedTile || !value) 
+			{
 				// Todo: Clear old selected
 				UnhighlightAllSpots();
 			}
 			selectedTile = value;
-			// Highlight possible positions
-			if (firstTurn) {
-				HighlightHexCord(new HexCord(){x=0,y=0,z=0});
-			} else {
-				// Highlight Spots For Selected
-				
+			if (selectedTile) 
+			{
+				// Highlight possible positions
+				if (firstTurn)
+				{
+					HighlightHexCord(new HexCord(){x=0,y=0,z=0});
+				} 
+				else 
+				{
+					// Highlight Spots For Selected
+				}
 			}
         }
     }
+
+	private void HighlightSpotsForSelected()
+	{
+		// First do ants
+		// Ants can go around the outside of the hive
+	}
 
 	private void HighlightHexCord(HexCord hc) 
 	{
@@ -135,18 +165,42 @@ public class HexBoard : MonoBehaviour {
 		GameObject highlightSpotGameObject = Instantiate(highlightSpotPrefab) as GameObject;
 		highlightSpotGameObject.transform.SetParent(transform);
 		Tile t = highlightSpotGameObject.GetComponent<Tile>();
+		t.isSpot = true;
 		t.board = this;
 		highlightedSpots.Add(t);
 		MoveTileToHexCord(t, hc);
 	}
 
+	public void TileOrSpotTouched(Tile t)
+	{
+		if (t.isSpot) 
+		{
+			// select a spot
+			MoveTileToHexCord(selectedTile, t.cord);
+			this.SelectedTile = null;
+			firstTurn = false;
+		} 
+		if (t == selectedTile) 
+		{
+			// unselect the already selected tile
+			this.SelectedTile = null;
+		} 
+		else 
+		{ 
+			// select a brand new tile
+			this.SelectedTile = t;
+		}
+	}
+
 	private void UnhighlightAllSpots() 
 	{
-		foreach (Tile t in highlightedSpots)
+		while (highlightedSpots.Count > 0) 
 		{
-			Destroy(t.gameObject);
+			Tile t = highlightedSpots[0];
+			highlightedSpots.RemoveAt(0);
+			GameObject go = t.gameObject;
+			DestroyImmediate(go);
 		}
-		highlightedSpots = new List<Tile>();
 	}
 
 	public void TileDragged(Tile t) 
