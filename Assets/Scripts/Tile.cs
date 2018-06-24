@@ -4,18 +4,61 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 
-	public enum Type { Ladybug, Roach, Mosquito, Ant, RollyPolly, Queen };
+	public enum Type { Ladybug, GrassHopper, Mosquito, Ant, RollyPolly, Queen, Spot };
+	public enum Location { WhiteBase, BlackBase, Board }
+	public enum Color { White, Black };
 
 	public HexBoard board;
-	public HexBoard.HexCord cord;
-	public Type type;
-//	private Vector3 dragOrigin;
-	public bool isSpot;
+    private Hex hex;
+    public Type type;
+	public Location location;
+	public Color color;
+	public string hexStr; 
+
+	public static double hexSize = 1.0;
+	public static double hexHeight = 0.3;
+	
+	private Vector3 VectorFromHex(Hex h)
+	{
+		Point p = h.ToPixel(hexSize);
+    	return new Vector3((float)p.x, (float)(h.y * hexHeight + 0.8 * hexHeight), (float)-p.y);
+	}
+
+    public Hex Hex
+    {
+        get
+        {
+            return hex;
+        }
+
+        set
+        {
+            hex = value;
+			hexStr = hex.ToString();
+			Vector3 newPos = VectorFromHex(hex);
+			gameObject.transform.localPosition = newPos;
+        }
+    }
 
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 		
+	}
+
+	public void Setup(HexBoard board, Type type, Color color) 
+	{
+		this.board = board;
+		this.type = type;
+		this.color = color;
+		this.location = color == Color.White ? Location.WhiteBase : Location.BlackBase;
+	}
+
+	public void SetupSpot(HexBoard board) 
+	{
+		this.board = board;
+		this.type = Type.Spot;
+		this.location = Location.Board;
 	}
 	
 	void OnMouseDrag() 

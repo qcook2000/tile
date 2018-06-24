@@ -1,0 +1,181 @@
+fileFormatVersion: 2
+guid: 1f4ced26dfd054ccd91a27e35fff6893
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: Ant
+    100002: AntennaBeetle
+    100004: Beetle
+    100006: //RootNode
+    100008: Butterfly
+    100010: DiamondBeetle
+    100012: Dragonfly
+    100014: Firefly
+    100016: Fly
+    100018: Grasshopper
+    100020: Ladybug
+    100022: MarshmallowBeetle
+    100024: Mosquito
+    100026: Pincher
+    100028: Queen
+    100030: SoldierBeetle
+    100032: Spider
+    100034: StripeBeetle
+    100036: TankBeetle
+    400000: Ant
+    400002: AntennaBeetle
+    400004: Beetle
+    400006: //RootNode
+    400008: Butterfly
+    400010: DiamondBeetle
+    400012: Dragonfly
+    400014: Firefly
+    400016: Fly
+    400018: Grasshopper
+    400020: Ladybug
+    400022: MarshmallowBeetle
+    400024: Mosquito
+    400026: Pincher
+    400028: Queen
+    400030: SoldierBeetle
+    400032: Spider
+    400034: StripeBeetle
+    400036: TankBeetle
+    2100000: unnamed
+    2300000: Ant
+    2300002: AntennaBeetle
+    2300004: Beetle
+    2300006: Butterfly
+    2300008: DiamondBeetle
+    2300010: Dragonfly
+    2300012: Firefly
+    2300014: Fly
+    2300016: Grasshopper
+    2300018: Ladybug
+    2300020: MarshmallowBeetle
+    2300022: Mosquito
+    2300024: Pincher
+    2300026: Queen
+    2300028: SoldierBeetle
+    2300030: Spider
+    2300032: StripeBeetle
+    2300034: TankBeetle
+    3300000: Ant
+    3300002: AntennaBeetle
+    3300004: Beetle
+    3300006: Butterfly
+    3300008: DiamondBeetle
+    3300010: Dragonfly
+    3300012: Firefly
+    3300014: Fly
+    3300016: Grasshopper
+    3300018: Ladybug
+    3300020: MarshmallowBeetle
+    3300022: Mosquito
+    3300024: Pincher
+    3300026: Queen
+    3300028: SoldierBeetle
+    3300030: Spider
+    3300032: StripeBeetle
+    3300034: TankBeetle
+    4300000: AntennaBeetle
+    4300002: Butterfly
+    4300004: TankBeetle
+    4300006: Mosquito
+    4300008: Queen
+    4300010: MarshmallowBeetle
+    4300012: DiamondBeetle
+    4300014: Dragonfly
+    4300016: Beetle
+    4300018: Spider
+    4300020: Ant
+    4300022: Fly
+    4300024: SoldierBeetle
+    4300026: Ladybug
+    4300028: Pincher
+    4300030: Firefly
+    4300032: StripeBeetle
+    4300034: Grasshopper
+    7400000: Default Take
+    9500000: //RootNode
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
