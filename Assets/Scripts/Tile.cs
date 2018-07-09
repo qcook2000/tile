@@ -1,22 +1,39 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Kalagaan.POFX;
+
 
 public class Tile : MonoBehaviour {
 
-	public enum Type { Ladybug, GrassHopper, Mosquito, Ant, RollyPolly, Queen, Spot };
-	public enum Location { WhiteBase, BlackBase, Board }
-	public enum Color { White, Black };
+	public enum Type { Ladybug, Pillbug, Mosquito, GrassHopper, Ant, Beetle, Queen, Spider, Spot };
+	public enum Team { White, Black };
+	public enum TileState { Normal, CanBeSelected, Selected }
+
 
 	public HexBoard board;
     private Hex hex;
     public Type type;
-	public Location location;
-	public Color color;
-	public string hexStr; 
+	public Team team;
+	public string hexStr;
+    private TileState state;
+
+    public GameObject bugPrefab;
+	public GameObject bugBlender;
+
+	private POFX_Rim rimLayer;
+    private POFX_Outline outlineLayer;
+
+	public Material blackMaterial;
+	public Material whiteMaterial;
 
 	public static double hexSize = 1.0;
 	public static double hexHeight = 0.3;
+
+	public static float canBeSelectedOutlineIntesity = 0.25f;
+	public static float canBeSelectedRimIntesity = 0.1f;
+	public static float selectedOutlineIntesity = 0.66f;
+	public static float selectedRimIntesity = 0.33f;
 	
 	private Vector3 VectorFromHex(Hex h)
 	{
@@ -40,25 +57,96 @@ public class Tile : MonoBehaviour {
         }
     }
 
+    public TileState State
+    {
+        get
+        {
+            return state;
+        }
+
+        set
+        {
+            state = value;
+			switch (value) {
+				case TileState.CanBeSelected:
+					rimLayer.m_cParams.intensity = canBeSelectedRimIntesity;
+					outlineLayer.m_cParams.intensity = canBeSelectedOutlineIntesity;
+					break;
+				case TileState.Selected:
+					rimLayer.m_cParams.intensity = selectedRimIntesity;
+					outlineLayer.m_cParams.intensity = selectedOutlineIntesity;
+					break;
+				case TileState.Normal:
+				default: 
+					rimLayer.m_cParams.intensity = 0;
+					outlineLayer.m_cParams.intensity = 0;
+					break;
+			}
+        }
+    }
+
 
     // Use this for initialization
     void Start () {
 		
 	}
 
-	public void Setup(HexBoard board, Type type, Color color) 
+	public string StringForType(Type type)
+	{
+		// Debug.Log(type);
+		switch (type) {
+			case Type.Ladybug: return "Ladybug";
+			case Type.GrassHopper: return "Grasshopper";
+			case Type.Mosquito: return "Mosquito";
+			case Type.Ant: return "Ant";
+			case Type.Beetle: return "TankBeetle";
+			case Type.Spider: return "Spider";
+			case Type.Pillbug: return "Pincher";
+			case Type.Queen: return "Queen";
+		}
+		return null;
+	}
+
+	public void Setup(HexBoard board, Type type, Team team) 
 	{
 		this.board = board;
 		this.type = type;
-		this.color = color;
-		this.location = color == Color.White ? Location.WhiteBase : Location.BlackBase;
+		this.team = team;
+		
+		// Set color material
+        GetComponent<Renderer>().material = team == Team.Black ? blackMaterial : whiteMaterial;
+
+		// Add bug object
+		GameObject bugGameObject = Instantiate(bugPrefab) as GameObject;
+		bugGameObject.transform.SetParent(this.transform);
+
+		// Set correct mesh for bug type
+		string typeString = StringForType(type);
+		GameObject newBugBlend = bugBlender.transform.Find(typeString).gameObject;
+		bugGameObject.GetComponent<MeshFilter>().mesh = newBugBlend.GetComponent<MeshFilter>().sharedMesh;
+
+		// Scale bug to fit
+		float tilewidth = Mathf.Sqrt(3) * (float)hexSize;
+		Vector3 bugScale = bugGameObject.GetComponent<Renderer>().bounds.size;
+		float padding = 0.5f;
+		float xFraction = (tilewidth - padding) / bugScale.x;
+		float zFraction = (tilewidth - padding) / bugScale.z;
+		float fraction = Mathf.Min(xFraction, zFraction);
+		bugGameObject.transform.localScale *= fraction;
+
+		// Position bug correctly
+		bugGameObject.transform.localPosition = new Vector3(0, 0, (float)hexHeight/2 + 0.01f);
+		
+		// Set the state to normal
+		outlineLayer = (POFX_Outline)GetComponent<POFX>().GetLayer(0);
+		rimLayer = (POFX_Rim)GetComponent<POFX>().GetLayer(1);
+		this.State = TileState.Normal;
 	}
 
 	public void SetupSpot(HexBoard board) 
 	{
 		this.board = board;
 		this.type = Type.Spot;
-		this.location = Location.Board;
 	}
 	
 	void OnMouseDrag() 
@@ -84,7 +172,8 @@ public class Tile : MonoBehaviour {
 		// } else {
 		// 	board.TileTappedOrClicked(this);
 		// }
-		board.TileOrSpotTouched(this);
+		if (type == Type.Spot) board.SpotTouched(this);
+		else board.SelectTile(this);
 	}
 
 	// Update is called once per frame
